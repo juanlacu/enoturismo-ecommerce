@@ -3,12 +3,15 @@
 import { useState } from 'react';
 import { useCart } from '@/lib/cart-context';
 import Link from 'next/link';
+import { QRCodeSVG } from 'qrcode.react';
+import { saveOrder } from '@/lib/orders';
 
 type Step = 'form' | 'success';
 
 export default function CheckoutPage() {
   const { items, totalPrice, clearCart } = useCart();
   const [step, setStep] = useState<Step>('form');
+  const [orderId, setOrderId] = useState('');
   const [form, setForm] = useState({
     name: '',
     email: '',
@@ -33,23 +36,49 @@ export default function CheckoutPage() {
   }
 
   if (step === 'success') {
+    const trackingUrl = `${typeof window !== 'undefined' ? window.location.origin : ''}/tracking/${orderId}`;
     return (
-      <div className="max-w-lg mx-auto px-4 py-32 text-center">
-        <div className="text-6xl mb-6">🎉</div>
-        <h1 className="text-3xl font-bold text-stone-800 mb-3">¡Reserva confirmada!</h1>
-        <p className="text-stone-500 mb-2">
-          Gracias, <strong>{form.name}</strong>. Te enviamos un email de confirmación a{' '}
+      <div className="max-w-lg mx-auto px-4 py-16 text-center">
+        <div className="text-6xl mb-4">🎉</div>
+        <h1 className="text-3xl font-bold text-stone-800 mb-2">¡Reserva confirmada!</h1>
+        <p className="text-stone-500 mb-1">
+          Gracias, <strong>{form.name}</strong>. Te enviamos confirmación a{' '}
           <strong>{form.email}</strong>.
         </p>
-        <p className="text-stone-400 text-sm mb-8">
-          Nuestro equipo se pondrá en contacto contigo para coordinar los detalles.
+        <p className="text-stone-400 text-sm mb-6">
+          Nuestro equipo se pondrá en contacto para coordinar los detalles.
         </p>
-        <Link
-          href="/"
-          className="inline-block bg-amber-700 hover:bg-amber-600 text-white px-8 py-3.5 rounded-full font-semibold transition-colors"
-        >
-          Volver al inicio
-        </Link>
+
+        {/* Order ID + QR */}
+        <div className="bg-white border border-stone-100 rounded-2xl shadow-sm p-6 mb-6 inline-block w-full">
+          <p className="text-xs uppercase tracking-widest text-stone-400 font-semibold mb-1">Número de pedido</p>
+          <p className="text-2xl font-bold text-amber-700 mb-5">{orderId}</p>
+
+          <div className="flex justify-center mb-4">
+            <div className="p-3 border border-stone-200 rounded-xl">
+              <QRCodeSVG value={trackingUrl} size={140} />
+            </div>
+          </div>
+
+          <p className="text-stone-400 text-xs">
+            Escaneá el QR para seguir el estado de tu pedido en cualquier momento.
+          </p>
+        </div>
+
+        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+          <Link
+            href={`/tracking/${orderId}`}
+            className="inline-block bg-amber-700 hover:bg-amber-600 text-white px-6 py-3 rounded-full font-semibold transition-colors text-sm"
+          >
+            Seguir mi pedido
+          </Link>
+          <Link
+            href="/"
+            className="inline-block border border-stone-200 hover:border-stone-300 text-stone-600 px-6 py-3 rounded-full font-semibold transition-colors text-sm"
+          >
+            Volver al inicio
+          </Link>
+        </div>
       </div>
     );
   }
@@ -70,6 +99,20 @@ export default function CheckoutPage() {
       setErrors(newErrors);
       return;
     }
+    const newOrderId = `EC-${new Date().getFullYear()}-${Math.floor(1000 + Math.random() * 9000)}`;
+    saveOrder({
+      id: newOrderId,
+      createdAt: new Date().toISOString(),
+      name: form.name,
+      email: form.email,
+      phone: form.phone,
+      date: form.date,
+      notes: form.notes,
+      items,
+      total: totalPrice,
+      status: 'confirmado',
+    });
+    setOrderId(newOrderId);
     clearCart();
     setStep('success');
   };

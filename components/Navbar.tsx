@@ -2,11 +2,14 @@
 
 import Link from 'next/link';
 import { useCart } from '@/lib/cart-context';
-import { useState } from 'react';
+import { useState, useSyncExternalStore } from 'react';
+
+const emptySubscribe = () => () => {};
 
 export default function Navbar() {
   const { totalItems } = useCart();
   const [menuOpen, setMenuOpen] = useState(false);
+  const mounted = useSyncExternalStore(emptySubscribe, () => true, () => false);
 
   return (
     <nav className="bg-stone-900 text-stone-100 sticky top-0 z-50">
@@ -47,12 +50,18 @@ export default function Navbar() {
             Paquetes
           </Link>
           <Link
+            href="/tracking"
+            className="hover:text-amber-400 transition-colors"
+          >
+            Mi pedido
+          </Link>
+          <Link
             href="/cart"
             className="relative flex items-center gap-1.5 bg-amber-700 hover:bg-amber-600 text-white px-4 py-2 rounded-full transition-colors"
           >
             <CartIcon />
             <span>Carrito</span>
-            {totalItems > 0 && (
+            {mounted && totalItems > 0 && (
               <span className="bg-red-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center font-bold">
                 {totalItems}
               </span>
@@ -64,7 +73,7 @@ export default function Navbar() {
         <div className="flex md:hidden items-center gap-3">
           <Link href="/cart" className="relative">
             <CartIcon />
-            {totalItems > 0 && (
+            {mounted && totalItems > 0 && (
               <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center font-bold">
                 {totalItems}
               </span>
@@ -90,7 +99,8 @@ export default function Navbar() {
           <Link href="/products" onClick={() => setMenuOpen(false)} className="py-2 border-b border-stone-700">Catálogo</Link>
           <Link href="/products?category=experiencias" onClick={() => setMenuOpen(false)} className="py-2 border-b border-stone-700">Experiencias</Link>
           <Link href="/products?category=vinos" onClick={() => setMenuOpen(false)} className="py-2 border-b border-stone-700">Vinos</Link>
-          <Link href="/products?category=paquetes" onClick={() => setMenuOpen(false)} className="py-2">Paquetes</Link>
+          <Link href="/products?category=paquetes" onClick={() => setMenuOpen(false)} className="py-2 border-b border-stone-700">Paquetes</Link>
+          <Link href="/tracking" onClick={() => setMenuOpen(false)} className="py-2">Mi pedido</Link>
         </div>
       )}
     </nav>
