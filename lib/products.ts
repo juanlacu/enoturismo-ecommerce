@@ -23,7 +23,7 @@ export const products: Product[] = [
     description: 'Recorrido guiado por nuestra bodega con degustación de 3 vinos.',
     longDescription:
       'Sumérgete en el mundo del vino con nuestro tour guiado por la bodega. Conocerás el proceso de elaboración del vino desde la viña hasta la botella, y terminarás con una degustación de 3 de nuestros mejores vinos acompañados de tabla de quesos y embutidos.',
-    image: 'https://images.unsplash.com/photo-1543362906-acfc16c67564?w=800&q=80',
+    image: 'https://images.unsplash.com/photo-1528823872057-9c018a7a7553?w=800&q=80',
     duration: '2 horas',
     includes: ['Guía experto', 'Degustación de 3 vinos', 'Tabla de quesos y embutidos'],
     stock: 20,
