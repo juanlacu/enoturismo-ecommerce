@@ -5,6 +5,7 @@ import { useCart } from '@/lib/cart-context';
 import Link from 'next/link';
 import { QRCodeSVG } from 'qrcode.react';
 import { saveOrder } from '@/lib/orders';
+import { applyCoupon, Coupon, findCoupon, isCouponValid, markCouponUsed } from '@/lib/coupons';
 
 type Step = 'form' | 'success';
 
@@ -20,6 +21,22 @@ export default function CheckoutPage() {
     notes: '',
   });
   const [errors, setErrors] = useState<Partial<typeof form>>({});
+  const [couponCode, setCouponCode] = useState('');
+  const [coupon, setCoupon] = useState<Coupon | null>(null);
+  const [couponError, setCouponError] = useState('');
+
+  const finalTotal = coupon ? applyCoupon(totalPrice, coupon) : totalPrice;
+
+  const handleApplyCoupon = () => {
+    const found = findCoupon(couponCode);
+    if (!found || !isCouponValid(found, totalPrice)) {
+      setCoupon(null);
+      setCouponError('Cupón inválido o vencido');
+      return;
+    }
+    setCoupon(found);
+    setCouponError('');
+  };
 
   if (items.length === 0 && step === 'form') {
     return (
@@ -48,6 +65,12 @@ export default function CheckoutPage() {
         <p className="text-stone-400 text-sm mb-6">
           Nuestro equipo se pondrá en contacto para coordinar los detalles.
         </p>
+        {form.notes && (
+          <div
+            className="text-stone-500 text-sm italic mb-6"
+            dangerouslySetInnerHTML={{ __html: `Tus comentarios: ${form.notes}` }}
+          />
+        )}
 
         {/* Order ID + QR */}
         <div className="bg-white border border-stone-100 rounded-2xl shadow-sm p-6 mb-6 inline-block w-full">
@@ -112,6 +135,7 @@ export default function CheckoutPage() {
       total: totalPrice,
       status: 'confirmado',
     });
+    if (coupon) markCouponUsed(coupon.code);
     setOrderId(newOrderId);
     clearCart();
     setStep('success');
@@ -259,10 +283,34 @@ export default function CheckoutPage() {
               ))}
             </div>
 
+            <div className="flex gap-2 mb-4">
+              <input
+                type="text"
+                value={couponCode}
+                onChange={(e) => setCouponCode(e.target.value)}
+                placeholder="Código de cupón"
+                className="flex-1 border border-stone-200 rounded-xl px-3 py-2 text-stone-800 text-sm outline-none focus:ring-2 focus:ring-amber-300"
+              />
+              <button
+                type="button"
+                onClick={handleApplyCoupon}
+                className="bg-stone-800 hover:bg-stone-700 text-white px-4 py-2 rounded-xl text-sm font-semibold"
+              >
+                Aplicar
+              </button>
+            </div>
+            {couponError && <p className="text-red-500 text-xs -mt-2 mb-4">{couponError}</p>}
+
             <div className="border-t border-stone-100 pt-4">
+              {coupon && (
+                <div className="flex justify-between text-sm text-green-700 mb-2">
+                  <span>Cupón {coupon.code}</span>
+                  <span>-{coupon.percent}%</span>
+                </div>
+              )}
               <div className="flex justify-between font-bold text-stone-800 text-lg">
                 <span>Total</span>
-                <span>U$S {totalPrice}</span>
+                <span>U$S {finalTotal}</span>
               </div>
             </div>
           </div>
