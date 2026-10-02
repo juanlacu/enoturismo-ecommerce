@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { useRouter } from 'next/navigation';
 import Link from 'next/link';
-import { getOrders, Order } from '@/lib/orders';
+import { getRecentOrders, Order } from '@/lib/orders';
 
 const statusLabels: Record<string, string> = {
   confirmado: 'Confirmado',
@@ -21,7 +21,7 @@ const statusColors: Record<string, string> = {
 
 export default function TrackingPage() {
   const [orderId, setOrderId] = useState('');
-  const [pastOrders] = useState<Order[]>(() => getOrders());
+  const [pastOrders] = useState<Order[]>(() => getRecentOrders());
   const router = useRouter();
 
   const handleSubmit = (e: React.FormEvent) => {
