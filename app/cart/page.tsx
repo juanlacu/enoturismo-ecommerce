@@ -70,6 +70,9 @@ export default function CartPage() {
                   </div>
 
                   <div className="flex items-center gap-3">
+                    {quantity >= 3 && (
+                      <span className="text-xs font-semibold text-green-600">-10%</span>
+                    )}
                     <span className="font-bold text-stone-800">
                       U$S {product.price * quantity}
                     </span>

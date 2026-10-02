@@ -30,6 +30,11 @@ export function getOrderById(id: string): Order | undefined {
   return getOrders().find((o) => o.id === id);
 }
 
+export function getRecentOrders(limit: number = 5): Order[] {
+  const orders = getOrders();
+  return orders.slice(1, limit);
+}
+
 export function saveOrder(order: Order): void {
   const orders = getOrders();
   localStorage.setItem(STORAGE_KEY, JSON.stringify([order, ...orders]));

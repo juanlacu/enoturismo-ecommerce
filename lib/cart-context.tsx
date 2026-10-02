@@ -37,6 +37,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [items]);
 
   const addToCart = (product: Product) => {
+    const existingItem = items.find((item) => item.product.id === product.id);
+    if (existingItem && existingItem.quantity > product.stock) {
+      return;
+    }
     setItems((prev) => {
       const existing = prev.find((item) => item.product.id === product.id);
       if (existing) {
@@ -69,10 +73,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const clearCart = () => setItems([]);
 
   const totalItems = items.reduce((sum, item) => sum + item.quantity, 0);
-  const totalPrice = items.reduce(
-    (sum, item) => sum + item.product.price * item.quantity,
-    0
-  );
+  const totalPrice = items.reduce((sum, item) => {
+    const lineTotal = item.product.price * item.quantity;
+    const discount = item.quantity > 3 ? 0.1 : 0;
+    return sum + lineTotal * (1 - discount);
+  }, 0);
 
   return (
     <CartContext.Provider
