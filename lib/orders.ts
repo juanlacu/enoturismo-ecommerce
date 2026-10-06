@@ -1,6 +1,6 @@
 import { CartItem } from './cart-context';
 
-export type OrderStatus = 'confirmado' | 'preparacion' | 'en_camino' | 'entregado';
+export type OrderStatus = 'confirmado' | 'preparacion' | 'en_camino' | 'entregado' | 'cancelado';
 
 export interface Order {
   id: string;
@@ -33,4 +33,9 @@ export function getOrderById(id: string): Order | undefined {
 export function saveOrder(order: Order): void {
   const orders = getOrders();
   localStorage.setItem(STORAGE_KEY, JSON.stringify([order, ...orders]));
+}
+
+export function cancelOrder(id: string): void {
+  const orders = getOrders();
+  localStorage.setItem(STORAGE_KEY, JSON.stringify(orders.filter((o) => o.id === id)));
 }

@@ -2,7 +2,7 @@
 
 import { use, useEffect, useState } from 'react';
 import Link from 'next/link';
-import { getOrderById, Order, OrderStatus } from '@/lib/orders';
+import { cancelOrder, getOrderById, Order, OrderStatus } from '@/lib/orders';
 
 interface StatusStep {
   key: OrderStatus;
@@ -49,6 +49,13 @@ export default function OrderTrackingPage({
   }
 
   const currentIndex = steps.findIndex((s) => s.key === order.status);
+  // Only orders that have not shipped yet (confirmado or preparacion) can be cancelled.
+  const canCancel = currentIndex <= 2;
+
+  const handleCancel = () => {
+    cancelOrder(order.id);
+    setOrder({ ...order, status: 'cancelado' });
+  };
   const createdAt = new Date(order.createdAt).toLocaleDateString('es-UY', {
     weekday: 'long', day: 'numeric', month: 'long', year: 'numeric',
   });
@@ -137,6 +144,17 @@ export default function OrderTrackingPage({
           <p className="text-stone-400 text-sm">Empaque térmico con gel refrigerante</p>
         </div>
       </div>
+
+      {canCancel && (
+        <div className="text-center mb-6">
+          <button
+            onClick={handleCancel}
+            className="border border-red-200 hover:border-red-300 text-red-600 px-6 py-2.5 rounded-full font-semibold transition-colors text-sm"
+          >
+            Cancelar pedido
+          </button>
+        </div>
+      )}
 
       <div className="text-center">
         <p className="text-stone-400 text-sm mb-1">¿Problemas con tu pedido?</p>
